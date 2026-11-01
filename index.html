@@ -1,0 +1,911 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <title>VAJRA AI OS</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1220;
+      --panel: #121d30;
+      --panel2: #18263d;
+      --border: #2a3a53;
+      --text: #edf4ff;
+      --muted: #9baec8;
+      --blue: #60a5fa;
+      --cyan: #67e8f9;
+      --green: #86efac;
+      --red: #fca5a5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at top left, #172d4a, transparent 45%),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, textarea, select { font: inherit; }
+
+    button {
+      cursor: pointer;
+      padding: 11px 15px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel2);
+      color: var(--text);
+    }
+
+    button:hover { border-color: var(--blue); }
+    button:disabled { opacity: .55; cursor: wait; }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0b1526;
+      color: var(--text);
+    }
+
+    textarea { min-height: 85px; resize: vertical; }
+
+    input:focus, textarea:focus, select:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 1px;
+    }
+
+    .shell { max-width: 1440px; margin: auto; padding: 24px; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .logo {
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: clamp(23px, 4vw, 34px); margin-bottom: 4px; }
+    h2 { font-size: 19px; }
+    .muted { color: var(--muted); }
+
+    .eyebrow {
+      margin-bottom: 7px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      max-width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      background: var(--panel);
+      font-size: 13px;
+    }
+
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; }
+    .status.ok { color: var(--green); border-color: #28553e; }
+    .status.ok .dot { background: var(--green); }
+    .status.bad { color: var(--red); border-color: #743b45; }
+    .status.bad .dot { background: var(--red); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .stat, .panel {
+      min-width: 0;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: linear-gradient(145deg, var(--panel), #101a2b);
+    }
+
+    .stat strong { display: block; margin-top: 8px; font-size: 30px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .stack { display: grid; gap: 18px; }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-grid { display: grid; gap: 12px; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 155px;
+      gap: 10px;
+    }
+
+    .primary { background: #2563eb; border-color: #3b82f6; }
+    .primary:hover { background: #1d4ed8; }
+    .full { width: 100%; }
+
+    .message { min-height: 18px; color: var(--cyan); font-size: 13px; }
+    .error-message { color: var(--red); }
+
+    .list { display: grid; gap: 10px; margin-top: 16px; }
+
+    .item {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #0e192a;
+    }
+
+    .item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .item h3 { margin: 0 0 7px; font-size: 15px; overflow-wrap: anywhere; }
+
+    .item p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .meta { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+
+    .tag {
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .tag.high { color: var(--red); }
+    .tag.completed { color: var(--green); }
+    .small-button { flex-shrink: 0; padding: 7px 9px; font-size: 12px; }
+
+    .chat-log {
+      display: grid;
+      gap: 12px;
+      max-height: 460px;
+      margin: 16px 0;
+      overflow-y: auto;
+    }
+
+    .bubble {
+      padding: 12px 14px;
+      border-radius: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .user { background: #19365c; border: 1px solid #2a5284; }
+    .assistant { background: #0c1728; border: 1px solid var(--border); }
+
+    .who {
+      margin-bottom: 5px;
+      color: var(--cyan);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .chat-form { display: grid; gap: 10px; }
+
+    .chat-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .notice { color: var(--muted); font-size: 12px; line-height: 1.5; }
+    footer { padding: 24px 0 8px; color: var(--muted); font-size: 12px; text-align: center; }
+
+    @media (max-width: 850px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .shell { padding: 13px; }
+      .stats { gap: 8px; }
+      .stat, .panel { padding: 14px; }
+      .stat strong { font-size: 24px; }
+      .stat .muted { font-size: 12px; }
+      .form-row { grid-template-columns: 1fr; }
+      .item-top { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+
+  <section id="authPanel" class="panel" style="margin-bottom:18px;">
+    <p class="eyebrow">SECURE ACCESS</p>
+    <h2>Sign in to VAJRA AI OS</h2>
+    <p class="muted">Use your existing VAJRA team account.</p>
+    <form id="loginForm" class="form-grid">
+      <label for="loginEmail">Email address
+        <input id="loginEmail" type="email" autocomplete="username" required>
+      </label>
+      <label for="loginPassword">Password
+        <input id="loginPassword" type="password" autocomplete="current-password" required>
+      </label>
+      <button class="primary" type="submit" id="loginButton">Sign in</button>
+      <p id="loginMessage" class="message" role="status"></p>
+    </form>
+  </section>
+
+    <header>
+      <div class="brand">
+        <div class="logo">V</div>
+        <div>
+          <div class="eyebrow">Team VAJRA · Operations</div>
+          <h1>VAJRA AI OS</h1>
+          <div class="muted">Your project command centre</div>
+        </div>
+      </div>
+
+      <div id="systemStatus" class="status" role="status" aria-live="polite">
+        <span class="dot"></span>
+        <span id="systemStatusText">Checking backend…</span>
+      </div>
+    </header>
+
+    <section class="stats">
+      <div class="stat">
+        <span class="muted">Total tasks</span>
+        <strong id="totalTasks">0</strong>
+      </div>
+      <div class="stat">
+        <span class="muted">Open tasks</span>
+        <strong id="openTasks">0</strong>
+      </div>
+      <div class="stat">
+        <span class="muted">Completed</span>
+        <strong id="completedTasks">0</strong>
+      </div>
+    </section>
+
+    <main class="layout">
+      <div class="stack">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">Project workspace</div>
+              <h2>VAJRA projects</h2>
+            </div>
+            <button type="button" id="refreshProjects">Refresh</button>
+          </div>
+
+          <form id="projectForm" class="form-grid">
+            <input id="projectName" maxlength="200" placeholder="Project name" required>
+
+            <textarea id="projectDescription" maxlength="5000"
+              placeholder="Project description"></textarea>
+
+            <label for="projectDeadline" class="muted">Target deadline</label>
+            <input id="projectDeadline" type="date">
+
+            <button class="primary" type="submit" id="createProjectButton">
+              Create project
+            </button>
+
+            <div id="projectMessage" class="message" role="status" aria-live="polite"></div>
+          </form>
+
+          <div id="projectList" class="list">
+            <p class="muted">Loading projects…</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">Workspace</div>
+              <h2>Task management</h2>
+            </div>
+            <button type="button" id="refreshTasks">Refresh</button>
+          </div>
+
+          <form id="taskForm" class="form-grid">
+            <input id="taskTitle" maxlength="200" placeholder="Task title" required>
+
+            <textarea id="taskDescription" maxlength="5000"
+              placeholder="Task description (optional)"></textarea>
+
+            <label for="taskProject" class="muted">Associated project</label>
+            <select id="taskProject">
+              <option value="">No project</option>
+            </select>
+
+            <div class="form-row">
+              <select id="taskPriority" aria-label="Task priority">
+                <option value="medium">Medium priority</option>
+                <option value="high">High priority</option>
+                <option value="low">Low priority</option>
+              </select>
+
+              <button class="primary" type="submit" id="createTaskButton">
+                Create task
+              </button>
+            </div>
+
+            <div id="taskMessage" class="message" role="status" aria-live="polite"></div>
+          </form>
+
+          <div id="taskList" class="list">
+            <p class="muted">Loading tasks…</p>
+          </div>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="panel">
+          <div class="eyebrow">Gemini-powered</div>
+          <h2>VAJRA AI assistant</h2>
+          <p class="muted">Ask questions, plan projects, or manage tasks using natural language.</p>
+
+          <div id="chatLog" class="chat-log" aria-live="polite">
+            <div class="bubble assistant">
+              <div class="who">VAJRA AI</div>
+              Hello! I can answer questions and help manage your projects and tasks.
+            </div>
+          </div>
+
+          <form id="chatForm" class="chat-form">
+            <textarea id="chatInput" maxlength="5000" required
+              placeholder="Example: Create a high-priority task for the RECAP prototype budget."></textarea>
+
+            <div class="chat-actions">
+              <span class="notice">Powered by Google Gemini API</span>
+              <button class="primary" id="sendButton" type="submit">Send message →</button>
+            </div>
+
+            <div id="chatMessage" class="message" role="status" aria-live="polite"></div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="eyebrow">System information</div>
+          <h2>Backend status</h2>
+          <p id="backendInfo" class="muted" aria-live="polite">
+            Checking backend and database…
+          </p>
+          <button type="button" id="refreshHealth">Check system again</button>
+          <p class="notice" style="margin-top:14px">
+            Development build. PostgreSQL stores projects and tasks permanently.
+            Do not enter passwords, API keys, or confidential information until team
+            authentication and permissions are configured.
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <footer>VAJRA AI OS · Development prototype · Team VAJRA</footer>
+  </div>
+
+  <script>
+    "use strict";
+
+    const $ = (id) => document.getElementById(id);
+
+    async function api(path, options = {}) {
+      const token = sessionStorage.getItem("vajra_access_token");
+      const headers = {
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...(options.headers || {})
+      };
+      if (token && path !== "/api/auth/login") {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(path, {
+        ...options,
+        headers,
+        cache: "no-store"
+      });
+
+      const contentType = response.headers.get("content-type") || "";
+      let data = {};
+      if (contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const responseText = await response.text();
+        data = { detail: responseText || `HTTP ${response.status}` };
+      }
+
+      if (!response.ok) {
+        if (response.status === 401 && token && path !== "/api/auth/login") {
+          sessionStorage.removeItem("vajra_access_token");
+          const panel = $("authPanel");
+          if (panel) panel.hidden = false;
+        }
+        throw new Error(
+          typeof data.detail === "string"
+            ? data.detail
+            : `Request failed with HTTP ${response.status}`
+        );
+      }
+      return data;
+    }
+
+    function setMessage(id, text, isError = false) {
+      const element = $(id);
+      element.textContent = text;
+      element.classList.toggle("error-message", isError);
+    }
+
+    function addBubble(role, text) {
+      const bubble = document.createElement("div");
+      bubble.className = `bubble ${role === "user" ? "user" : "assistant"}`;
+
+      const who = document.createElement("div");
+      who.className = "who";
+      who.textContent = role === "user" ? "You" : "VAJRA AI";
+
+      const content = document.createElement("div");
+      content.textContent = text;
+
+      bubble.append(who, content);
+      $("chatLog").appendChild(bubble);
+      $("chatLog").scrollTop = $("chatLog").scrollHeight;
+
+      return content;
+    }
+
+    async function loadHealth() {
+      const status = $("systemStatus");
+      const statusText = $("systemStatusText");
+      const info = $("backendInfo");
+
+      status.classList.remove("ok", "bad");
+      statusText.textContent = "Checking backend…";
+      info.textContent = "Checking backend and database…";
+
+      try {
+        const data = await api("/health");
+
+        const dbConnected = data.database_connected === true;
+        const geminiConfigured = data.gemini_configured === true;
+
+        status.classList.toggle("ok", dbConnected);
+        status.classList.toggle("bad", !dbConnected);
+
+        statusText.textContent = dbConnected
+          ? "Backend online · PostgreSQL connected"
+          : "Backend online · Database disconnected";
+
+        info.textContent =
+          `Backend: ${data.status || "unknown"} · ` +
+          `Gemini: ${geminiConfigured ? "configured" : "not configured"} · ` +
+          `Database: ${dbConnected ? "connected" : "disconnected"} · ` +
+          `Model: ${data.model || "unknown"} · ` +
+          `Storage: ${data.storage || "unknown"}`;
+
+        console.log("VAJRA health response:", data);
+      } catch (error) {
+        console.error("VAJRA health check failed:", error);
+        status.classList.remove("ok");
+        status.classList.add("bad");
+        statusText.textContent = "Backend unavailable";
+        info.textContent = `Health check failed: ${error.message}`;
+      }
+    }
+
+    async function loadProjects() {
+      const list = $("projectList");
+      list.replaceChildren();
+
+      try {
+        const data = await api("/api/projects");
+        const projects = Array.isArray(data.projects) ? data.projects : [];
+
+        const selector = $("taskProject");
+        const previousSelection = selector.value;
+
+        selector.replaceChildren();
+
+        const noProject = document.createElement("option");
+        noProject.value = "";
+        noProject.textContent = "No project";
+        selector.appendChild(noProject);
+
+        for (const project of projects) {
+          const option = document.createElement("option");
+          option.value = project.id;
+          option.textContent = project.name;
+          selector.appendChild(option);
+        }
+
+        if (projects.some(p => String(p.id) === previousSelection)) {
+          selector.value = previousSelection;
+        }
+
+        if (projects.length === 0) {
+          const empty = document.createElement("p");
+          empty.className = "muted";
+          empty.textContent = "No projects yet. Create your first project above.";
+          list.appendChild(empty);
+          return;
+        }
+
+        for (const project of projects) {
+          const card = document.createElement("article");
+          card.className = "item";
+
+          const top = document.createElement("div");
+          top.className = "item-top";
+
+          const details = document.createElement("div");
+          const title = document.createElement("h3");
+          title.textContent = project.name;
+
+          const description = document.createElement("p");
+          description.textContent = project.description || "No description provided.";
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+
+          const status = document.createElement("span");
+          status.className = "tag";
+          status.textContent = project.status || "active";
+
+          const count = document.createElement("span");
+          count.className = "tag";
+          count.textContent = `${project.task_count ?? 0} tasks`;
+
+          const deadline = document.createElement("span");
+          deadline.className = "tag";
+          deadline.textContent = project.deadline
+            ? `Due: ${String(project.deadline).slice(0, 10)}`
+            : "No deadline";
+
+          const id = document.createElement("span");
+          id.className = "tag";
+          id.textContent = `ID: ${project.id}`;
+
+          meta.append(status, count, deadline, id);
+          details.append(title, description, meta);
+          top.appendChild(details);
+          card.appendChild(top);
+          list.appendChild(card);
+        }
+      } catch (error) {
+        console.error("Could not load projects:", error);
+
+        const message = document.createElement("p");
+        message.className = "error-message";
+        message.textContent = `Could not load projects: ${error.message}`;
+        list.appendChild(message);
+      }
+    }
+
+    async function loadTasks() {
+      const list = $("taskList");
+      list.replaceChildren();
+
+      try {
+        const data = await api("/api/tasks");
+        const tasks = Array.isArray(data.tasks) ? data.tasks : [];
+
+        $("totalTasks").textContent = tasks.length;
+        $("openTasks").textContent = tasks.filter(t => t.status === "open").length;
+        $("completedTasks").textContent = tasks.filter(t => t.status === "completed").length;
+
+        if (tasks.length === 0) {
+          const empty = document.createElement("p");
+          empty.className = "muted";
+          empty.textContent = "No tasks yet. Create a task or ask VAJRA AI.";
+          list.appendChild(empty);
+          return;
+        }
+
+        tasks.sort((a, b) =>
+          String(b.created_at || "").localeCompare(String(a.created_at || ""))
+        );
+
+        for (const task of tasks) {
+          const card = document.createElement("article");
+          card.className = "item";
+
+          const top = document.createElement("div");
+          top.className = "item-top";
+
+          const details = document.createElement("div");
+          const title = document.createElement("h3");
+          title.textContent = task.title;
+
+          const description = document.createElement("p");
+          description.textContent = task.description || "No description provided.";
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+
+          const priority = document.createElement("span");
+          priority.className = `tag${task.priority === "high" ? " high" : ""}`;
+          priority.textContent = `${task.priority || "medium"} priority`;
+
+          const status = document.createElement("span");
+          status.className = `tag${task.status === "completed" ? " completed" : ""}`;
+          status.textContent = task.status || "open";
+
+          const project = document.createElement("span");
+          project.className = "tag";
+          project.textContent = task.project_name || "No project";
+
+          const id = document.createElement("span");
+          id.className = "tag";
+          id.textContent = `ID: ${task.id}`;
+
+          meta.append(priority, status, project, id);
+          details.append(title, description, meta);
+          top.appendChild(details);
+
+          if (task.status === "open") {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "small-button";
+            button.textContent = "Complete";
+
+            button.addEventListener("click", async () => {
+              if (button.disabled) return;
+              button.disabled = true;
+
+              try {
+                await api(
+                  `/api/tasks/${encodeURIComponent(task.id)}/complete`,
+                  { method: "POST" }
+                );
+
+                setMessage("taskMessage", "Task marked completed.");
+                await Promise.all([loadTasks(), loadProjects()]);
+              } catch (error) {
+                setMessage("taskMessage", error.message, true);
+                button.disabled = false;
+              }
+            });
+
+            top.appendChild(button);
+          }
+
+          card.appendChild(top);
+          list.appendChild(card);
+        }
+      } catch (error) {
+        console.error("Could not load tasks:", error);
+
+        const message = document.createElement("p");
+        message.className = "error-message";
+        message.textContent = `Could not load tasks: ${error.message}`;
+        list.appendChild(message);
+      }
+    }
+
+    $("projectForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const form = event.currentTarget;
+      if (form.dataset.submitting === "true") return;
+
+      const button = $("createProjectButton");
+      form.dataset.submitting = "true";
+      button.disabled = true;
+      setMessage("projectMessage", "Creating project…");
+
+      try {
+        const name = $("projectName").value.trim();
+        if (!name) throw new Error("Enter a project name.");
+
+        const deadline = $("projectDeadline").value;
+
+        const result = await api("/api/projects", {
+          method: "POST",
+          body: JSON.stringify({
+            name,
+            description: $("projectDescription").value.trim(),
+            deadline: deadline || null,
+            status: "active"
+          })
+        });
+
+        if (!result.project && !result.success) {
+          throw new Error("The server did not confirm project creation.");
+        }
+
+        form.reset();
+        setMessage("projectMessage", "Project created successfully.");
+        await loadProjects();
+      } catch (error) {
+        console.error("Project creation failed:", error);
+        setMessage("projectMessage", `Could not create project: ${error.message}`, true);
+      } finally {
+        form.dataset.submitting = "false";
+        button.disabled = false;
+      }
+    });
+
+    $("taskForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const form = event.currentTarget;
+      if (form.dataset.submitting === "true") return;
+
+      const button = $("createTaskButton");
+      form.dataset.submitting = "true";
+      button.disabled = true;
+      setMessage("taskMessage", "Creating task…");
+
+      try {
+        const title = $("taskTitle").value.trim();
+        if (!title) throw new Error("Enter a task title.");
+
+        const result = await api("/api/tasks", {
+          method: "POST",
+          body: JSON.stringify({
+            title,
+            description: $("taskDescription").value.trim(),
+            priority: $("taskPriority").value,
+            project_id: $("taskProject").value || null
+          })
+        });
+
+        if (!result.task && !result.success) {
+          throw new Error("The server did not confirm task creation.");
+        }
+
+        form.reset();
+        setMessage("taskMessage", "Task created successfully.");
+        await Promise.all([loadTasks(), loadProjects()]);
+      } catch (error) {
+        console.error("Task creation failed:", error);
+        setMessage("taskMessage", `Could not create task: ${error.message}`, true);
+      } finally {
+        form.dataset.submitting = "false";
+        button.disabled = false;
+      }
+    });
+
+    $("chatForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const form = event.currentTarget;
+      if (form.dataset.submitting === "true") return;
+
+      const message = $("chatInput").value.trim();
+      if (!message) return;
+
+      const button = $("sendButton");
+      form.dataset.submitting = "true";
+      button.disabled = true;
+
+      addBubble("user", message);
+      $("chatInput").value = "";
+      setMessage("chatMessage", "VAJRA is thinking…");
+
+      const responseContent = addBubble("assistant", "Thinking…");
+
+      try {
+        const data = await api("/api/chat", {
+          method: "POST",
+          body: JSON.stringify({ message })
+        });
+
+        responseContent.textContent = data.reply || "No response returned.";
+        setMessage("chatMessage", `Response received from ${data.model || "Gemini"}.`);
+
+        await Promise.all([loadTasks(), loadProjects()]);
+      } catch (error) {
+        console.error("AI chat failed:", error);
+        responseContent.textContent = `Error: ${error.message}`;
+        setMessage("chatMessage", "The AI request failed. Check server logs.", true);
+      } finally {
+        form.dataset.submitting = "false";
+        button.disabled = false;
+        $("chatInput").focus();
+      }
+    });
+
+
+  $("loginForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const button = $("loginButton");
+    const message = $("loginMessage");
+    button.disabled = true;
+    message.classList.remove("error-message");
+    message.textContent = "Signing in...";
+
+    try {
+      const body = new URLSearchParams();
+      body.set("username", $("loginEmail").value.trim());
+      body.set("password", $("loginPassword").value);
+
+      const data = await api("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString()
+      });
+
+      if (!data.access_token) {
+        throw new Error("Login response did not contain an access token.");
+      }
+
+      sessionStorage.setItem("vajra_access_token", data.access_token);
+      $("authPanel").hidden = true;
+      $("loginPassword").value = "";
+      message.textContent = "";
+      await Promise.all([loadProjects(), loadTasks()]);
+    } catch (error) {
+      message.textContent = `Sign-in failed: ${error.message}`;
+      message.classList.add("error-message");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  $("refreshProjects").addEventListener("click", loadProjects);
+    $("refreshTasks").addEventListener("click", loadTasks);
+    $("refreshHealth").addEventListener("click", loadHealth);
+
+    // Initialize once: this script is placed after all page elements.
+  loadHealth();
+  if (sessionStorage.getItem("vajra_access_token")) {
+    $("authPanel").hidden = true;
+    Promise.all([loadProjects(), loadTasks()]);
+  } else {
+    $("authPanel").hidden = false;
+    setMessage("projectMessage", "Sign in to load projects.");
+    setMessage("taskMessage", "Sign in to load tasks.");
+    setMessage("chatMessage", "Sign in to use VAJRA AI chat.");
+  }
+  </script>
+</body>
+</html>
